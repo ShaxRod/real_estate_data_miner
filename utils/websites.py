@@ -29,11 +29,9 @@ class privateproperty:
 
         for province in provinces:
             province_url = f'https://www.privateproperty.co.za/for-sale/{province}/{provinces[province]}'
-            print(province_url)
             province_object = webscrape(province_url, area_container)
 
             items = province_object.scraper_items()
-            print(len(items))
             try:
                 areas = items[1].find_all('a', href=True)
                 area_list = ['https://www.privateproperty.co.za' + i['href'] for i in areas]
@@ -59,26 +57,30 @@ class privateproperty:
         for province in area_dict:
             for permutation in area_dict[province]:
                 permutation_items = webscrape(permutation, index_container).scraper_items()
-                links = permutation_items[0].find_all('a', href=True)
-                try:
-                    if len(links) < 4:
-                        max_index = 1
-                    else:
-                        max_index_link = links[-2]['href']
-                        max_index = int(max_index_link.split('=')[1])
-                except:
-                    print(f'{permutation} is tikking')
 
-                for index in range(1, max_index + 1):
-                    print(province, permutation, index)
-                    if index == 1:
-                        url = permutation
-                    else:
-                        url = f'{permutation}?page={index}'
-                    obj = webscrape(url, container)
-                    obj_dict = obj.scraper_dict(data)
-                    frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
-                    final_df = pd.concat([final_df, frame], ignore_index=True)
-                    print(len(final_df))
+                if len(permutation_items) > 0:
+                    links = permutation_items[0].find_all('a', href=True)
+                    try:
+                        if len(links) == 0:
+                            max_index = 1
+                        else:
+                            max_index_link = links[-2]['href']
+                            max_index = int(max_index_link.split('=')[1])
+
+                        for index in range(1, max_index + 1):
+                            print(province, permutation, index)
+                            if index == 1:
+                                url = permutation
+                            else:
+                                url = f'{permutation}?page={index}'
+                            obj = webscrape(url, container)
+                            obj_dict = obj.scraper_dict(data)
+                            frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
+                            final_df = pd.concat([final_df, frame], ignore_index=True)
+                            print(len(final_df))
+                    except:
+                        print(f'{permutation} is tikking')
+                else:
+                    continue
 
         return final_df
