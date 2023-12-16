@@ -9,21 +9,12 @@ class privateproperty:
     This class is able to pull all relevant data from the privateproperty.co.za website
     '''
 
-    def get_area_links(self):
+    def get_area_links(self, provinces: dict):
 
         '''
         :return: dictionary with all area links of website
         '''
         area_dict = dict()
-        provinces = {'eastern-cape': '7',
-                     'free-state': '6',
-                     'gauteng': '3',
-                     'kwazulu-natal': '2',
-                     'limpopo': '8',
-                     'mpumalanga': '10',
-                     'northern-cape': '5',
-                     'north-west': '9',
-                     'western-cape': '4'}
 
         area_container = {'div': 'contentHolder'}
 
@@ -41,23 +32,17 @@ class privateproperty:
 
         return area_dict
 
+    def get_main_feautures(self,):
+
+        return
+
     def listing_aggregations(self, area_dict: dict):
 
         final_df = pd.DataFrame()
 
-        container = {'a': "listingResult row"}
-        data = {'title': 'div',
-                'priceDescription': 'div',
-                'propertyType': 'div',
-                'suburb': 'div',
-                'address': 'div'
-                }
-        index_container = {'div': 'pageNumbers'}
-
         for province in area_dict:
             for permutation in area_dict[province]:
-                permutation_items = webscrape(permutation, index_container).scraper_items()
-
+                permutation_items = webscrape(permutation, container={'div': 'pageNumbers'}).scraper_items()
                 if len(permutation_items) > 0:
                     links = permutation_items[0].find_all('a', href=True)
                     try:
@@ -73,8 +58,14 @@ class privateproperty:
                                 url = permutation
                             else:
                                 url = f'{permutation}?page={index}'
-                            obj = webscrape(url, container)
-                            obj_dict = obj.scraper_dict(data)
+                            obj = webscrape(url, container={'a': "listingResult row"})
+                            obj_dict = obj.scraper_dict(data={'title': 'div',
+                                                              'priceDescription': 'div',
+                                                              'propertyType': 'div',
+                                                              'suburb': 'div',
+                                                              'address': 'div',
+                                                              'href': 'href'
+                                                              })
                             frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
                             final_df = pd.concat([final_df, frame], ignore_index=True)
                             print(len(final_df))

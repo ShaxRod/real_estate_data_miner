@@ -50,7 +50,10 @@ class webscrape(object):
             temp_dict = {}
             for element in data:
                 try:
-                    thing = item.find(data[element], class_=element).text
+                    if data[element] == 'div':
+                        thing = item.find(data[element], class_=element).text
+                    else:
+                        thing = item.get(element)
                     temp_dict[element] = thing
                 except:
                     temp_dict[element] = 'empty html element'
@@ -58,4 +61,3 @@ class webscrape(object):
             dict[f'{i}'] = temp_dict
 
         return dict
-
