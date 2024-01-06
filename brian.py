@@ -42,22 +42,25 @@ def get_main_features(mit_data: pd.DataFrame):
     return main_features, catch
 
 
-def mitdata():
+def mitdata(property_config: dict):
     # inputs
-
     website = "https://www.privateproperty.co.za"
     provinces = {'western-cape': '4'}
+    for property_type in property_config:
 
-    areas = privateproperty().get_area_links(provinces=provinces)
-    scrape_frame = privateproperty().listing_aggregations({'western-cape': [areas['western-cape'][11]]})
-    scrape_frame['url'] = website + scrape_frame['href'].astype('str')
+        areas = privateproperty().get_area_links(provinces=provinces, property_type=property_type)
+        scrape_frame = privateproperty().listing_aggregations({'western-cape': [areas['western-cape'][11]]},
+                                                              data_dict=property_config[property_type]['data_dict'])
+        scrape_frame['url'] = website + scrape_frame['href'].astype('str')
+        woodstock = scrape_frame[scrape_frame['suburb'] == 'Woodstock'].copy(deep=True)
+        features, catch = get_main_features(woodstock)
+        feature_frame = pd.DataFrame(features)
+        feature_frame = feature_frame.transpose()
+        final_frame = pd.merge(left=woodstock,
+                               right=feature_frame,
+                               on='url',
+                               how='left')
+        final_frame['property_type'] = property_type
+        final_frame.to_excel(f'C:/Users/User/OneDrive/Documents/brian/{property_type}_frame.xlsx')
+    return
 
-    woodstock = scrape_frame[scrape_frame['suburb'] == 'Woodstock'].copy(deep=True)
-    features, catch = get_main_features(woodstock)
-    feature_frame = pd.DataFrame(features)
-    feature_frame = feature_frame.transpose()
-    final_frame = pd.merge(left=woodstock,
-                           right=feature_frame,
-                           on='url',
-                           how='left')
-    return final_frame

@@ -9,9 +9,11 @@ class privateproperty:
     This class is able to pull all relevant data from the privateproperty.co.za website
     '''
 
-    def get_area_links(self, provinces: dict):
+    def get_area_links(self, provinces: dict, property_type: str = 'for-sale'):
 
         '''
+        :var: provinces - dictionary containing provinces url int
+        :var: property_type - 'for-sale' or 'to-rent'
         :return: dictionary with all area links of website
         '''
         area_dict = dict()
@@ -19,7 +21,7 @@ class privateproperty:
         area_container = {'div': 'contentHolder'}
 
         for province in provinces:
-            province_url = f'https://www.privateproperty.co.za/for-sale/{province}/{provinces[province]}'
+            province_url = f'https://www.privateproperty.co.za/{property_type}/{province}/{provinces[province]}'
             province_object = webscrape(province_url, area_container)
 
             items = province_object.scraper_items()
@@ -32,11 +34,11 @@ class privateproperty:
 
         return area_dict
 
-    def get_main_feautures(self,):
+    def get_main_feautures(self, ):
 
         return
 
-    def listing_aggregations(self, area_dict: dict):
+    def listing_aggregations(self, area_dict: dict, data_dict: dict):
 
         final_df = pd.DataFrame()
 
@@ -59,13 +61,7 @@ class privateproperty:
                             else:
                                 url = f'{permutation}?page={index}'
                             obj = webscrape(url, container={'a': "listingResult row"})
-                            obj_dict = obj.scraper_dict(data={'title': 'div',
-                                                              'priceDescription': 'div',
-                                                              'propertyType': 'div',
-                                                              'suburb': 'div',
-                                                              'address': 'div',
-                                                              'href': 'href'
-                                                              })
+                            obj_dict = obj.scraper_dict(data=data_dict)
                             frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
                             final_df = pd.concat([final_df, frame], ignore_index=True)
                             print(len(final_df))

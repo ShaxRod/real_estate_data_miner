@@ -1,4 +1,5 @@
 from utils.websites import privateproperty
+import brian
 import datetime
 
 
@@ -11,8 +12,25 @@ def main():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    output = main()
-    main_dir = r'C:\Users\User\OneDrive\Documents\brian'
-    output.to_excel(f'{main_dir}/MIT_data{datetime.date.today()}')
+    config = {'for-sale': {'data_dict': {'title': 'div',
+                                         'priceDescription': 'div',
+                                         'propertyType': 'div',
+                                         'suburb': 'div',
+                                         'address': 'div',
+                                         'href': 'href'
+                                         }
+                           },
+              'to-rent': {'data_dict': {'title': 'div',
+                                        'priceDescription': 'div',
+                                        'priceAdditionalDescriptor': 'div',
+                                        'propertyType': 'div',
+                                        'suburb': 'div',
+                                        'address': 'div',
+                                        'href': 'href'
+                                        }
+                          }
+              }
+
+    output = brian.mitdata(property_config=config)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
