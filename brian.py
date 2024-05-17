@@ -9,29 +9,34 @@ def get_main_features(mit_data: pd.DataFrame):
     catch = dict()
     for i, link in enumerate(mit_data['url']):
         try:
-            dimensions = webscrape(url=link, container={'div': 'mainFeatures'}).scraper_items(False)
-            print('dimensions: ', len(dimensions))
-            if len(dimensions) != 0:
-                temp = dict()
-                temp['url'] = link
-                for dimension in dimensions[0].find_all('span'):
-                    dim_list = dimension.text.rsplit()
-                    if len(dim_list) > 0:
-                        if dim_list[0] == 'Land' or dim_list[0] == 'Floor':
-                            temp[f'{dim_list[0]}_{dim_list[1]}'] = dim_list[2]
-                        elif dim_list[0] == 'Rates' or dim_list[0] == 'Levy':
-                            temp[f'{dim_list[0]}'] = dim_list[2]
+            soup_html, _ = webscrape(url=link, container={'div': 'listing-details__main-features'}).scraper_items(True)
+            souper = soup_html.find_all('span', {'class' : 'property-features__name-value'})
+            if len(souper) !=0:
+                temp = {'url' : link}
+                for feature in souper:
+                    f_list = feature.text.split()
+                    if 'Listing' in f_list:
+                        temp['listing_number'] = str(f_list[-1])
+                    elif ('Erf' and 'size') in f_list:
+                        temp['plot_size'] = float(f_list[-2])
+                    elif ('Floor' and 'size') in f_list:
+                        temp['floor_size'] = float(f_list[-2])
+                    elif ('Rates' and 'taxes') in f_list:
+                        rates = f_list[4:]
+                        cct = ''
+                        for j in rates:
+                            cct += j
+                        temp['rates'] = cct
 
-                for key in ['url', 'Floor_Area', 'Land_Area', 'Rates', 'Levy']:
-                    if key not in temp.keys():
-                        temp[key] = '0'
+                for feature in ['listing_number', 'plot_size', 'floor_size', 'rates']:
+                    if feature not in temp.keys():
+                        temp[feature] = 0
             else:
                 temp = {'url': link,
                         'Floor_Area': '0',
                         'Land_Area': '0',
                         'Rates': '0',
                         'Levy': '0'}
-            print(temp)
         except:
             print(i, 'tapped out')
             catch[i] = {'index': i,
@@ -52,6 +57,15 @@ def mitdata(property_config: dict):
         scrape_frame = privateproperty().listing_aggregations({'western-cape': [areas['western-cape'][11]]},
                                                               data_dict=property_config[property_type]['data_dict'])
         scrape_frame['url'] = website + scrape_frame['href'].astype('str')
+        scrape_frame = scrape_frame.rename(columns=property_config[property_type]['df_columns'])
+
+        scrape_frame['suburb'] = scrape_frame.apply(lambda x: x['address']
+                                                    if x['suburb'] == 'empty html element'
+                                                    else x['suburb'], axis=1
+                                                    )
+        scrape_frame['address'] = scrape_frame.apply(lambda x: x['address'].replace(str(x['suburb']), ''), axis=1)
+
+
         woodstock = scrape_frame[scrape_frame['suburb'] == 'Woodstock'].copy(deep=True)
         features, catch = get_main_features(woodstock)
         feature_frame = pd.DataFrame(features)
@@ -60,7 +74,15 @@ def mitdata(property_config: dict):
                                right=feature_frame,
                                on='url',
                                how='left')
+
         final_frame['property_type'] = property_type
-        final_frame.to_excel(f'C:/Users/User/OneDrive/Documents/brian/{property_type}_frame.xlsx')
+        final_frame[['title', 'cost', 'suburb',
+                     'address', 'url',
+                     'listing_number', 'plot_size', 'rates',
+                     'floor_size', 'property_type'
+                     ]].to_excel(f'C:/Users/User/OneDrive/Documents/brian/{property_type}_frame.xlsx')
     return
 
+obj = webscrape(url='https://www.privateproperty.co.za/for-sale/western-cape/cape-town/cape-town-city-bowl/tamboerskloof/13-carstens-street/T4607194',
+                container={'div': 'listing-details__main-features'})
+soup, item = obj.scraper_items(html_bool=True)

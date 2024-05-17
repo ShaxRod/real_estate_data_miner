@@ -18,7 +18,7 @@ class privateproperty:
         '''
         area_dict = dict()
 
-        area_container = {'div': 'contentHolder'}
+        area_container = {'div': 'region-area__content'}
 
         for province in provinces:
             province_url = f'https://www.privateproperty.co.za/{property_type}/{province}/{provinces[province]}'
@@ -44,7 +44,7 @@ class privateproperty:
 
         for province in area_dict:
             for permutation in area_dict[province]:
-                permutation_items = webscrape(permutation, container={'div': 'pageNumbers'}).scraper_items()
+                permutation_items = webscrape(permutation, container={'div': 'paging'}).scraper_items()
                 if len(permutation_items) > 0:
                     links = permutation_items[0].find_all('a', href=True)
                     try:
@@ -60,7 +60,7 @@ class privateproperty:
                                 url = permutation
                             else:
                                 url = f'{permutation}?page={index}'
-                            obj = webscrape(url, container={'a': "listingResult row"})
+                            obj = webscrape(url, container={'a': "listing-result"})
                             obj_dict = obj.scraper_dict(data=data_dict)
                             frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
                             final_df = pd.concat([final_df, frame], ignore_index=True)

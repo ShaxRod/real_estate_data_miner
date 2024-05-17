@@ -50,7 +50,7 @@ class webscrape(object):
             temp_dict = {}
             for element in data:
                 try:
-                    if data[element] == 'div':
+                    if data[element] in ('div', 'span'):
                         thing = item.find(data[element], class_=element).text
                     else:
                         thing = item.get(element)
