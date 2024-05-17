@@ -83,6 +83,3 @@ def mitdata(property_config: dict):
                      ]].to_excel(f'C:/Users/User/OneDrive/Documents/brian/{property_type}_frame.xlsx')
     return
 
-obj = webscrape(url='https://www.privateproperty.co.za/for-sale/western-cape/cape-town/cape-town-city-bowl/tamboerskloof/13-carstens-street/T4607194',
-                container={'div': 'listing-details__main-features'})
-soup, item = obj.scraper_items(html_bool=True)
