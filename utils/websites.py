@@ -29,8 +29,8 @@ class privateproperty:
                 areas = items[1].find_all('a', href=True)
                 area_list = ['https://www.privateproperty.co.za' + i['href'] for i in areas]
                 area_dict[province] = area_list
-            except:
-                print(f'{province} is tikking')
+            except Exception as e:
+                print(f'{province} is tikking : {e}')
 
         return area_dict
 
@@ -65,8 +65,8 @@ class privateproperty:
                             frame = data_structure_format().nest_dict_to_dataframe(obj_dict)
                             final_df = pd.concat([final_df, frame], ignore_index=True)
                             print(len(final_df))
-                    except:
-                        print(f'{permutation} is tikking')
+                    except Exception as e:
+                        print(f'{permutation} is tikking : {e}')
                 else:
                     continue
 
